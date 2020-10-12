@@ -36,12 +36,31 @@ class MiniCssExtractPlugin {
       baseDataPath: 'options',
     });
 
+    const attributes =
+      typeof options.attributes === 'object' ? options.attributes : {};
+
     this.options = Object.assign(
       {
         filename: DEFAULT_FILENAME,
         ignoreOrder: false,
       },
-      options
+      options,
+      { attributes }
+    );
+
+    this.runtimeOptions = {};
+
+    this.runtimeOptions.attributes = Template.asString(
+      Object.entries(this.options.attributes).reduce((accumulator, entry) => {
+        const [key, value] = entry;
+        accumulator.push(
+          `linkTag.setAttribute(${JSON.stringify(key)}, ${JSON.stringify(
+            value
+          )});`
+        );
+
+        return accumulator;
+      }, [])
     );
 
     if (!this.options.chunkFilename) {
@@ -367,7 +386,8 @@ class MiniCssExtractPlugin {
                     '}',
                     'var linkTag = document.createElement("link");',
                     'linkTag.rel = "stylesheet";',
-                    'linkTag.type = "text/css";',
+                    `linkTag.type = "text/css";`,
+                    this.runtimeOptions.attributes,
                     'linkTag.onload = resolve;',
                     'linkTag.onerror = function(event) {',
                     Template.indent([
@@ -429,7 +449,10 @@ class MiniCssExtractPlugin {
               true
             )
           );
-          compilation.addRuntimeModule(chunk, new CssLoadingRuntimeModule(set));
+          compilation.addRuntimeModule(
+            chunk,
+            new CssLoadingRuntimeModule(set, this.runtimeOptions)
+          );
         };
         compilation.hooks.runtimeRequirementInTree
           .for(webpack.RuntimeGlobals.ensureChunkHandlers)

@@ -80,6 +80,7 @@ module.exports = {
 |      **[`filename`](#filename)**      | `{String\|Function}` |    `[name].css`     | This option determines the name of each output CSS file  |
 | **[`chunkFilename`](#chunkFilename)** | `{String\|Function}` | `based on filename` | This option determines the name of non-entry chunk files |
 |   **[`ignoreOrder`](#ignoreOrder)**   |     `{Boolean}`      |       `false`       | Remove Order Warnings                                    |
+|    **[`attributes`](#attributes)**    |      `{Object}`      |        `{}`         | Adds custom attributes to tag                            |
 
 #### `filename`
 
@@ -108,6 +109,40 @@ Default: `false`
 
 Remove Order Warnings.
 See [examples](#remove-order-warnings) below for details.
+
+#### `attributes`
+
+Type: `Object`
+Default: `{}`
+
+If defined, the `mini-css-extract-plugin` will attach given attributes with their values on <link> element.
+
+**webpack.config.js**
+
+```js
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
+module.exports = {
+  plugins: [
+    new MiniCssExtractPlugin({
+      attributes: {
+        id: 'target',
+        'data-target': 'example',
+      },
+    }),
+  ],
+  module: {
+    rules: [
+      {
+        test: /\.css$/i,
+        use: [MiniCssExtractPlugin.loader, 'css-loader'],
+      },
+    ],
+  },
+};
+```
+
+Note: It's only applied to dynamically loaded css chunks, if you want to modify link attributes inside html file, please using [html-webpack-plugin](https://github.com/jantimon/html-webpack-plugin)
 
 ### Loader Options
 
